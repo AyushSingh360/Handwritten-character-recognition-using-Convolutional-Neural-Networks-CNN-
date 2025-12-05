@@ -1,37 +1,46 @@
 # 🔢 MNIST Handwritten Digit Recognition
 
-A classic "Hello World" deep learning project that trains a **Convolutional Neural Network (CNN)** to classify handwritten digits (0-9) using the MNIST dataset.
+A complete deep learning project that trains a **Convolutional Neural Network (CNN)** to classify handwritten digits (0-9) using the MNIST dataset.
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)
+![Accuracy](https://img.shields.io/badge/Accuracy-99.3%25-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 ## ✨ Features
 
 - 🧠 **Modern CNN Architecture** - BatchNorm, Dropout, and 3 convolutional layers
-- 📊 **Training Pipeline** - Complete with validation, metrics, and model checkpointing
-- 🎨 **Interactive Demo** - Draw digits and get real-time predictions via Gradio
-- 📈 **Visualizations** - Training curves, confusion matrix, and sample predictions
-- 🚀 **High Accuracy** - Achieves ~99% accuracy on MNIST test set
+- 📊 **Complete Training Pipeline** - Validation, metrics, and model checkpointing
+- 🎨 **Web Interface** - Upload images and get predictions via Gradio
+- 📦 **Batch Processing** - Process folders of images, export to CSV/JSON
+- 📓 **Jupyter Notebook** - Step-by-step walkthrough for learning
+- 📈 **Visualizations** - Training curves, confusion matrix, sample predictions
+- 🚀 **99.3% Accuracy** - Production-ready performance
 
 ## 🏗️ Project Structure
 
 ```
 CNN/
-├── requirements.txt    # Project dependencies
-├── README.md           # This file
-├── model.py            # CNN architecture definition
-├── train.py            # Training script
-├── predict.py          # Inference/prediction utilities
-├── utils.py            # Helper functions
-├── demo.py             # Gradio interactive demo
-├── models/             # Saved model checkpoints
+├── model.py              # CNN architecture definition
+├── train.py              # Training script
+├── predict.py            # Inference/prediction module
+├── utils.py              # Helper functions
+├── app.py                # Gradio web interface
+├── batch_processor.py    # Batch processing & export
+├── mnist_walkthrough.ipynb  # Tutorial notebook
+├── requirements.txt      # Dependencies
+├── README.md             # This file
+├── models/               # Saved model checkpoints
 │   ├── mnist_cnn.pth
 │   └── mnist_cnn_best.pth
-└── outputs/            # Training visualizations
-    ├── training_curves.png
-    ├── confusion_matrix.png
-    └── sample_predictions.png
+├── outputs/              # Training visualizations
+│   ├── training_curves.png
+│   ├── confusion_matrix.png
+│   └── sample_predictions.png
+├── predictions/          # Batch processing results
+│   ├── logs/
+│   └── reports/
+└── data/                 # MNIST dataset (auto-downloaded)
 ```
 
 ## 🚀 Quick Start
@@ -42,35 +51,34 @@ CNN/
 pip install -r requirements.txt
 ```
 
-### 2. Train the Model
+### 2. Train the Model (Optional - already trained)
 
 ```bash
-python train.py
+python train.py --epochs 10
 ```
 
-This will:
-- Download the MNIST dataset automatically
-- Train the CNN for 10 epochs
-- Save the best model to `models/mnist_cnn_best.pth`
-- Generate visualizations in the `outputs/` folder
+### 3. Launch Web Interface
 
-**Training Options:**
 ```bash
-python train.py --epochs 20 --batch-size 128 --lr 0.0005
+python app.py
+```
+Open http://127.0.0.1:7860 in your browser.
+
+### 4. Run Jupyter Notebook
+
+```bash
+jupyter notebook mnist_walkthrough.ipynb
 ```
 
-### 3. Launch Interactive Demo
+### 5. Batch Process Images
 
-```bash
-python demo.py
-```
+```python
+from batch_processor import BatchProcessor
 
-Open your browser to `http://127.0.0.1:7860` and draw digits!
-
-### 4. Test Predictions
-
-```bash
-python predict.py
+processor = BatchProcessor()
+results = processor.process_folder("./my_digits/")
+processor.save_results_csv()
+processor.print_summary()
 ```
 
 ## 🧠 Model Architecture
@@ -113,7 +121,7 @@ Output (10) - Logits for each digit class
 
 **Model Statistics:**
 - Parameters: ~300,000
-- Model Size: ~1.2 MB
+- Model Size: ~1.7 MB
 - Inference Time: <1ms on GPU, ~5ms on CPU
 
 ## 📊 Results
@@ -121,69 +129,38 @@ Output (10) - Logits for each digit class
 | Metric | Value |
 |--------|-------|
 | Training Accuracy | ~99.5% |
-| Validation Accuracy | ~99.0% |
+| Validation Accuracy | **99.3%** |
 | Training Time (GPU) | ~2-3 minutes |
 | Training Time (CPU) | ~15-20 minutes |
 
-### Sample Outputs
+## 📚 Usage Examples
 
-After training, you'll find these visualizations in the `outputs/` folder:
-
-- **Training Curves** - Loss and accuracy over epochs
-- **Confusion Matrix** - Classification performance per digit
-- **Sample Predictions** - Visual examples with confidence scores
-
-## 📁 Dataset
-
-The [MNIST dataset](http://yann.lecun.com/exdb/mnist/) contains:
-- **60,000** training images
-- **10,000** test images
-- **28×28** grayscale images
-- **10 classes** (digits 0-9)
-
-The dataset is downloaded automatically when you run `train.py`.
-
-## 🔧 Configuration
-
-### Training Parameters
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `--epochs` | 10 | Number of training epochs |
-| `--batch-size` | 64 | Batch size for training |
-| `--lr` | 0.001 | Learning rate |
-| `--no-cuda` | False | Disable GPU acceleration |
-
-### Data Augmentation
-
-The training pipeline includes:
-- Random rotation (±10°)
-- Random translation (±10%)
-- Random scaling (90-110%)
-
-## 📚 API Usage
-
-### Using the Predictor
+### Basic Prediction
 
 ```python
 from predict import MNISTPredictor
-from PIL import Image
 
-# Load the predictor
 predictor = MNISTPredictor()
-
-# Predict from image file
 digit, confidence, probs = predictor.predict("digit.png")
-print(f"Predicted: {digit} (Confidence: {confidence:.2%})")
+print(f"Predicted: {digit} ({confidence:.1%})")
+```
 
-# Predict from PIL Image
-image = Image.open("digit.png")
-digit, confidence, probs = predictor.predict(image)
+### Batch Processing
 
-# Predict from numpy array
-import numpy as np
-array = np.array(image)
-digit, confidence, probs = predictor.predict(array)
+```python
+from batch_processor import BatchProcessor
+
+processor = BatchProcessor()
+
+# Process a folder
+results = processor.process_folder("./digits/")
+
+# Export results
+processor.save_results_csv()
+processor.save_results_json()
+
+# Get summary
+processor.print_summary()
 ```
 
 ### Using the Model Directly
@@ -192,10 +169,7 @@ digit, confidence, probs = predictor.predict(array)
 import torch
 from model import MNISTNet
 
-# Create model
 model = MNISTNet()
-
-# Load trained weights
 checkpoint = torch.load('./models/mnist_cnn.pth')
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
@@ -205,6 +179,53 @@ input_tensor = torch.randn(1, 1, 28, 28)
 output = model(input_tensor)
 predicted = torch.argmax(output, dim=1)
 ```
+
+## 🔧 Command Line Options
+
+### Training
+
+```bash
+python train.py --epochs 20 --batch-size 128 --lr 0.0005 --no-cuda
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--epochs` | 10 | Number of training epochs |
+| `--batch-size` | 64 | Batch size for training |
+| `--lr` | 0.001 | Learning rate |
+| `--no-cuda` | False | Disable GPU acceleration |
+
+### Prediction Demo
+
+```bash
+python predict.py
+```
+
+### Web Interface
+
+```bash
+python app.py
+```
+
+## 📁 Dataset
+
+The [MNIST dataset](http://yann.lecun.com/exdb/mnist/) contains:
+- **60,000** training images
+- **10,000** test images
+- **28×28** grayscale images
+- **10 classes** (digits 0-9)
+
+The dataset is downloaded automatically on first run.
+
+## 📓 Learning Resources
+
+- **Jupyter Notebook** (`mnist_walkthrough.ipynb`): Step-by-step tutorial covering:
+  1. Understanding the MNIST Dataset
+  2. Exploring the CNN Architecture
+  3. Training the Model
+  4. Making Predictions
+  5. Visualizing Results
+  6. Analyzing Misclassifications
 
 ## 🛠️ Development
 
@@ -221,17 +242,20 @@ python model.py
 
 # Test prediction module
 python predict.py
+
+# Test batch processor
+python batch_processor.py
 ```
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
 - [MNIST Dataset](http://yann.lecun.com/exdb/mnist/) by Yann LeCun
 - [PyTorch](https://pytorch.org/) for the deep learning framework
-- [Gradio](https://gradio.app/) for the interactive web interface
+- [Gradio](https://gradio.app/) for the web interface
 
 ---
 

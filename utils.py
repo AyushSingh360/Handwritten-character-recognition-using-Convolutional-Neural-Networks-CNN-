@@ -103,7 +103,8 @@ def load_mnist_data(
 
 def plot_training_history(
     history: dict,
-    save_path: Optional[str] = None
+    save_path: Optional[str] = None,
+    show: bool = False
 ) -> None:
     """
     Plot training and validation metrics.
@@ -154,13 +155,17 @@ def plot_training_history(
                     facecolor='white', edgecolor='none')
         print(f"✓ Saved training curves to {save_path}")
     
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
 
 def plot_confusion_matrix(
     y_true: List[int],
     y_pred: List[int],
-    save_path: Optional[str] = None
+    save_path: Optional[str] = None,
+    show: bool = False
 ) -> None:
     """
     Plot confusion matrix for classification results.
@@ -202,7 +207,10 @@ def plot_confusion_matrix(
                     facecolor='white', edgecolor='none')
         print(f"✓ Saved confusion matrix to {save_path}")
     
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
 
 def plot_sample_predictions(
@@ -211,7 +219,8 @@ def plot_sample_predictions(
     pred_labels: torch.Tensor,
     probabilities: torch.Tensor,
     num_samples: int = 16,
-    save_path: Optional[str] = None
+    save_path: Optional[str] = None,
+    show: bool = False
 ) -> None:
     """
     Plot sample predictions with confidence scores.
@@ -267,7 +276,10 @@ def plot_sample_predictions(
                     facecolor='white', edgecolor='none')
         print(f"✓ Saved sample predictions to {save_path}")
     
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        plt.close()
 
 
 def get_device() -> torch.device:

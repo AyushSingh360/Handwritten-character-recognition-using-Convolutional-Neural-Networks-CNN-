@@ -206,10 +206,18 @@ def visualize_prediction(
     ax1 = axes[0]
     if isinstance(image, str):
         img = Image.open(image).convert('L')
+        img = np.array(img)
+    elif isinstance(image, torch.Tensor):
+        # Handle tensor: denormalize and convert to numpy
+        img = image.squeeze().cpu().numpy()
+        img = img * 0.3081 + 0.1307  # Denormalize
+        img = np.clip(img * 255, 0, 255).astype(np.uint8)
     elif isinstance(image, np.ndarray):
         img = image
-    else:
+    elif hasattr(image, 'convert'):  # PIL Image
         img = np.array(image.convert('L'))
+    else:
+        raise ValueError(f"Unsupported image type: {type(image)}")
     
     ax1.imshow(img, cmap='gray')
     ax1.set_title(
