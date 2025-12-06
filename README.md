@@ -183,5 +183,5 @@ MIT License
 ---
 
 <p align="center">
-  Made with ❤️ for learning deep learning
+  Made with ❤️ for learning deep learning by Ayush Singh
 </p>
