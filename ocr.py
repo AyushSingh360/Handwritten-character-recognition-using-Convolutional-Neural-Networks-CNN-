@@ -95,18 +95,16 @@ class HandwritingOCR:
         # This helps with paper texture and small artifacts
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         
-        # Apply adaptive thresholding
-        # Increased block size from 11 to 31 to handle thicker strokes better
-        # Adjusted C constant from 2 to 10 to reduce background noise
-        binary = cv2.adaptiveThreshold(
-            blurred, 255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY_INV,
-            31, 10
+        # Apply Otsu's thresholding
+        # This automatically finds the best threshold value and is more robust
+        # for thick strokes than adaptive thresholding (which can make them hollow)
+        _, binary = cv2.threshold(
+            blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU
         )
         
         # Optional: Apply morphological operations to clean up
         kernel = np.ones((2, 2), np.uint8)
+        binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
         binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
         
         return binary
@@ -139,13 +137,52 @@ class HandwritingOCR:
             if w >= self.min_char_width and h >= self.min_char_height:
                 bboxes.append((x, y, w, h))
         
-        # Sort bounding boxes
-        if sort_by == 'left':
-            bboxes.sort(key=lambda b: b[0])  # Sort by x coordinate
-        elif sort_by == 'top':
-            bboxes.sort(key=lambda b: b[1])  # Sort by y coordinate
+        if not bboxes:
+            return []
+
+        # Sort bboxes by Y first to group lines
+        # But simple Y sort is not enough because of slight misalignments
+        bboxes.sort(key=lambda b: b[1])
         
-        return bboxes
+        # Group into lines
+        lines = []
+        if bboxes:
+            current_line = [bboxes[0]]
+            
+            # Adaptive threshold for line break
+            # Use height of current characters to determine if next char starts new line
+            avg_height = bboxes[0][3]
+            
+            for i in range(1, len(bboxes)):
+                prev_bbox = bboxes[i-1]
+                curr_bbox = bboxes[i]
+                
+                # Check vertical overlap or distance
+                # If vertical distance between tops is small (e.g. < 0.5 * height), it's same line
+                # OR if the center of current is within the Y-range of previous line
+                
+                y_diff = curr_bbox[1] - current_line[-1][1]
+                
+                # If significant Y difference, it's a new line
+                if y_diff > avg_height * 0.5:
+                    lines.append(current_line)
+                    current_line = [curr_bbox]
+                    avg_height = curr_bbox[3]
+                else:
+                    current_line.append(curr_bbox)
+                    # Update average height
+                    current_heights = [b[3] for b in current_line]
+                    avg_height = sum(current_heights) / len(current_heights)
+            
+            lines.append(current_line)
+            
+        # Sort each line by X and flatten
+        sorted_bboxes = []
+        for line in lines:
+            line.sort(key=lambda b: b[0])
+            sorted_bboxes.extend(line)
+            
+        return sorted_bboxes
     
     def extract_character(
         self, 
@@ -173,9 +210,11 @@ class HandwritingOCR:
         # Extract character
         char_img = image[y1:y2, x1:x2]
         
-        # Ensure it's inverted (white on black for MNIST/EMNIST style)
-        if np.mean(char_img) > 127:
-            char_img = 255 - char_img
+        # No inversion needed as we are using binary image (White text on Black BG)
+        # and the bbox is tight around the white text.
+
+        # Rotate 90 degrees Clockwise to match EMNIST dataset orientation
+        char_img = cv2.rotate(char_img, cv2.ROTATE_90_CLOCKWISE)
         
         # Resize to 28x28 while maintaining aspect ratio
         h, w = char_img.shape
@@ -198,6 +237,11 @@ class HandwritingOCR:
         y_offset = (28 - new_h) // 2
         x_offset = (28 - new_w) // 2
         canvas[y_offset:y_offset+new_h, x_offset:x_offset+new_w] = char_img
+        
+        # Normalize to full dynamic range (0-255)
+        # This fixes issues where the extracted character is too faint
+        if np.max(canvas) > 0:
+            canvas = cv2.normalize(canvas, None, 0, 255, cv2.NORM_MINMAX)
         
         return canvas
     
@@ -279,7 +323,9 @@ class HandwritingOCR:
         # Recognize each character
         characters = []
         for bbox in bboxes:
-            char_img = self.extract_character(gray, bbox)
+            # Use binary image for extraction to ensure solid strokes
+            # content is already White-on-Black (inverted) from binarize_image
+            char_img = self.extract_character(binary, bbox)
             label, idx, conf, probs = self.predictor.predict(char_img)
             
             characters.append({
