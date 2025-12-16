@@ -1,0 +1,7 @@
+Original                  | A     | 0.8129
+Rotate 90 CCW (Transpose) | G     | 0.6352
+Rotate 90 CW              | B     | 0.9180
+Rotate 180                | A     | 0.5279
+Flip Horizontal           | A     | 0.5059
+Flip Vertical             | A     | 0.8700
+Transpose + Flip          | B     | 0.8444

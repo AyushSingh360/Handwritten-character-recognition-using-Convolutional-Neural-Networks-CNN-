@@ -1,0 +1,34 @@
+Found 27 bounding boxes.
+
+Recognition Result:
+Text: YBDFLCHLXRWHOBOLNMXHJT
+Confidence: 0.7692
+
+Character details:
+Y: 0.8081
+B: 0.9179
+C: 0.3721
+D: 0.7065
+F: 0.5234
+L: 0.9561
+C: 0.9008
+H: 0.8765
+L: 0.8114
+I: 0.4631
+X: 0.9684
+R: 0.8944
+W: 0.9979
+H: 0.8424
+O: 0.7552
+B: 0.9977
+O: 0.8425
+B: 0.4751
+Z: 0.4703
+L: 0.8495
+N: 0.5123
+H: 0.4695
+M: 0.9462
+X: 0.9994
+H: 0.8043
+J: 0.8762
+T: 0.7319
