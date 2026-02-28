@@ -1,0 +1,45 @@
+Total rows: 330961
+Columns: ['FILENAME', 'IDENTITY']
+Unique IDENTITY values: 100539
+Top IDENTITY values:
+IDENTITY
+THOMAS       1825
+EMPTY        1796
+LEA          1582
+EMMA         1482
+LUCAS        1479
+HUGO         1367
+CAMILLE      1367
+CLEMENT      1313
+MANON        1277
+LOUIS        1257
+THEO         1214
+CHLOE        1204
+ANTOINE      1168
+MARIE        1156
+ENZO         1148
+CLARA        1143
+PAUL         1118
+NATHAN       1107
+ALEXANDRE    1080
+MAXIME       1066
+Name: count, dtype: int64
+
+Sample rows:
+          FILENAME   IDENTITY
+0  TRAIN_00001.jpg  BALTHAZAR
+1  TRAIN_00002.jpg      SIMON
+2  TRAIN_00003.jpg      BENES
+3  TRAIN_00004.jpg    LA LOVE
+4  TRAIN_00005.jpg     DAPHNE
+5  TRAIN_00006.jpg      LUCIE
+6  TRAIN_00007.jpg     NASSIM
+7  TRAIN_00008.jpg   ASSRAOUI
+8  TRAIN_00009.jpg     LAVIAN
+9  TRAIN_00010.jpg      MAEVA
+
+NaN in IDENTITY: 565
+UNREADABLE count: 102
+
+FILENAME samples:
+['TRAIN_00001.jpg', 'TRAIN_00002.jpg', 'TRAIN_00003.jpg', 'TRAIN_00004.jpg', 'TRAIN_00005.jpg']
