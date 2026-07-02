@@ -17,6 +17,7 @@ from torchvision import transforms
 from typing import Tuple, Optional, Union, Literal
 
 from model_extended import AlphanumericNet, get_class_info, index_to_label, create_model
+from model import MNISTNet as OriginalMNISTNet
 from utils import get_device
 
 DatasetType = Literal['mnist', 'letters', 'balanced', 'byclass']
@@ -90,8 +91,15 @@ class AlphanumericPredictor:
         
         self.class_info = get_class_info(self.dataset_type)
         
-        # Create model with correct architecture
-        model = AlphanumericNet(num_classes=num_classes, dataset_type=self.dataset_type)
+        # Detect architecture: old MNISTNet (3 conv blocks) vs AlphanumericNet (4 conv blocks)
+        state_dict = checkpoint.get('model_state_dict', checkpoint)
+        is_old_mnist = 'conv4.weight' not in state_dict and 'fc1.weight' in state_dict and state_dict['fc1.weight'].shape[1] == 1152
+        
+        if self.dataset_type == 'mnist' and is_old_mnist:
+            # Use original MNISTNet architecture for old checkpoints
+            model = OriginalMNISTNet()
+        else:
+            model = AlphanumericNet(num_classes=num_classes, dataset_type=self.dataset_type)
         
         # Load weights
         if 'model_state_dict' in checkpoint:

@@ -165,7 +165,8 @@ def plot_confusion_matrix(
     y_true: List[int],
     y_pred: List[int],
     save_path: Optional[str] = None,
-    show: bool = False
+    show: bool = False,
+    class_names: Optional[List[str]] = None
 ) -> None:
     """
     Plot confusion matrix for classification results.
@@ -174,21 +175,30 @@ def plot_confusion_matrix(
         y_true: Ground truth labels
         y_pred: Predicted labels
         save_path: Path to save the figure (optional)
+        class_names: Optional list of class names for tick labels
     """
     # Calculate confusion matrix
     cm = confusion_matrix(y_true, y_pred)
+    num_classes = cm.shape[0]
+    
+    # Determine tick labels
+    if class_names is not None and len(class_names) == num_classes:
+        tick_labels = class_names
+    else:
+        tick_labels = [str(i) for i in range(num_classes)]
     
     # Create figure
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig_size = max(8, num_classes * 0.6)
+    fig, ax = plt.subplots(figsize=(fig_size, fig_size * 0.8))
     
     # Plot heatmap
     sns.heatmap(
         cm,
-        annot=True,
+        annot=num_classes <= 30,
         fmt='d',
         cmap='Blues',
-        xticklabels=range(10),
-        yticklabels=range(10),
+        xticklabels=tick_labels,
+        yticklabels=tick_labels,
         ax=ax,
         square=True,
         linewidths=0.5,
@@ -302,19 +312,31 @@ def get_device() -> torch.device:
     return device
 
 
-def print_classification_report(y_true: List[int], y_pred: List[int]) -> None:
+def print_classification_report(
+    y_true: List[int], 
+    y_pred: List[int],
+    class_names: Optional[List[str]] = None
+) -> None:
     """
     Print detailed classification report.
     
     Args:
         y_true: Ground truth labels
         y_pred: Predicted labels
+        class_names: Optional list of class names for target labels
     """
+    num_classes = len(set(y_true) | set(y_pred))
+    
+    if class_names is not None and len(class_names) >= num_classes:
+        target_names = class_names[:num_classes]
+    else:
+        target_names = [str(i) for i in range(num_classes)]
+    
     print("\n" + "="*60)
     print("CLASSIFICATION REPORT")
     print("="*60)
     print(classification_report(
         y_true, 
         y_pred, 
-        target_names=[f'Digit {i}' for i in range(10)]
+        target_names=target_names
     ))

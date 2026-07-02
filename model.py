@@ -177,10 +177,12 @@ def get_model_summary(model: nn.Module) -> str:
 if __name__ == "__main__":
     # Test the model
     model = MNISTNet()
+    model.eval()
     print(get_model_summary(model))
     
     # Test forward pass
     dummy_input = torch.randn(1, 1, 28, 28)
-    output = model(dummy_input)
+    with torch.no_grad():
+        output = model(dummy_input)
     print(f"Input shape: {dummy_input.shape}")
     print(f"Output shape: {output.shape}")
