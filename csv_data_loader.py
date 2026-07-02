@@ -235,8 +235,31 @@ def create_csv_dataloaders(
     generator = torch.Generator().manual_seed(seed)
     train_ds, val_ds = random_split(full_dataset, [train_size, val_size], generator=generator)
 
-    # Apply val transform to val subset
-    val_ds.dataset.transform = val_transform   # type: ignore[attr-defined]
+    # Apply val transform to val subset without mutating the parent dataset
+    class TransformSubset(torch.utils.data.Dataset):
+        """Wrapper that applies a specific transform to a subset."""
+        def __init__(self, subset, transform):
+            self.subset = subset
+            self.transform = transform
+        def __len__(self):
+            return len(self.subset)
+        def __getitem__(self, idx):
+            img, label = self.subset[idx]
+            if self.transform is not None:
+                # img is already a tensor from the parent transform,
+                # so we apply val-specific normalization only if needed
+                pass
+            return img, label
+
+    # Re-create val dataset with val transform applied at load time
+    val_full_dataset = HandwritingCSVDataset(
+        csv_path   = csv_path,
+        images_dir = images_dir,
+        top_n      = top_n,
+        transform  = val_transform,
+        label_encoder = class_to_idx,
+    )
+    _, val_ds = random_split(val_full_dataset, [train_size, val_size], generator=generator)
 
     train_loader = DataLoader(
         train_ds,
